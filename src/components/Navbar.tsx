@@ -1,23 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
-import { SITE_CONFIG } from '../data/siteConfig';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, LayoutGrid, Moon, Sun } from 'lucide-react';
+import { NavItem, SITE_CONFIG } from '../data/siteConfig';
+import { LogoMark } from './LogoMark';
 
 interface NavbarProps {
   activeSection: string;
   scrollProgress: number;
 }
 
+type NavRecord = Record<string, NavItem>;
+
 export const Navbar: React.FC<NavbarProps> = ({
   activeSection,
   scrollProgress,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [localTime, setLocalTime] = useState<string>('');
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const saved = document.documentElement.getAttribute('data-theme');
     return saved === 'light' ? 'light' : 'dark';
   });
+
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+  const logoClicksRef = useRef<{ count: number; last: number }>({
+    count: 0,
+    last: 0,
+  });
+
+  const navById = SITE_CONFIG.navigation.reduce<NavRecord>((acc, item) => {
+    acc[item.id] = item;
+    return acc;
+  }, {});
 
   const handleToggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
@@ -55,6 +70,27 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (!dropdownRef.current) return;
+      if (!dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setDropdownOpen(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
+
   const handleNavClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
     href: string
@@ -62,11 +98,36 @@ export const Navbar: React.FC<NavbarProps> = ({
     if (!href.startsWith('#')) return;
     e.preventDefault();
     setMobileMenuOpen(false);
+    setDropdownOpen(false);
     if (window.location.hash === href) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     window.location.hash = href;
+  };
+
+  // Five quick taps on the mark opens the hidden terminal.
+  const handleLogoClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    const now = Date.now();
+    const record = logoClicksRef.current;
+    if (now - record.last > 2500) {
+      record.count = 0;
+    }
+    record.count += 1;
+    record.last = now;
+
+    if (record.count >= 5) {
+      record.count = 0;
+      e.preventDefault();
+      window.location.hash = '#/secret';
+      window.dispatchEvent(new CustomEvent('ss-easter-egg', { detail: 'logo' }));
+      return;
+    }
+
+    handleNavClick(e, href);
   };
 
   return (
@@ -82,32 +143,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Clickable Logo returning to homepage */}
         <a
           href="#/"
-          onClick={(e) => handleNavClick(e, '#/')}
+          onClick={(e) => handleLogoClick(e, '#/')}
           className="cyber-logo"
           aria-label="SlashStr1ker — Return to Homepage"
         >
-          <span className="cyber-logo__emblem" aria-hidden="true">
-            <svg viewBox="0 0 40 40" fill="none">
-              <polygon
-                points="20,2 36,11 36,29 20,38 4,29 4,11"
-                stroke="#00F5FF"
-                strokeWidth="1.8"
-                fill="rgba(0, 245, 255, 0.08)"
-              />
-              <path
-                d="M13 13H26L16 20H27L13 28"
-                stroke="#00F5FF"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M9 31L31 9"
-                stroke="#FF3CAC"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
+          <span className="cyber-logo__emblem">
+            <LogoMark />
           </span>
           <span className="cyber-logo__text-group">
             <span className="cyber-logo__brand">
@@ -117,22 +158,85 @@ export const Navbar: React.FC<NavbarProps> = ({
           </span>
         </a>
 
-        {/* Desktop Navigation Links */}
+        {/* Desktop Navigation: Home + one dropdown with every section */}
         <nav className="cyber-nav__links" aria-label="Primary Navigation">
-          {SITE_CONFIG.navigation.map((item) => {
-            const isActive = activeSection === item.id;
-            return (
-              <a
-                key={item.id}
-                href={item.href}
-                onClick={(e) => handleNavClick(e, item.href)}
-                className={`cyber-nav__link ${isActive ? 'is-active' : ''}`}
-              >
-                <span className="cyber-nav__link-code">{item.code}</span>
-                <span>{item.label}</span>
-              </a>
-            );
-          })}
+          <a
+            href="#/"
+            onClick={(e) => handleNavClick(e, '#/')}
+            className={`cyber-nav__link ${activeSection === 'home' ? 'is-active' : ''}`}
+          >
+            <span className="cyber-nav__link-code">01</span>
+            <span>Home</span>
+          </a>
+
+          <div
+            ref={dropdownRef}
+            className={`cyber-nav__dropdown ${dropdownOpen ? 'is-open' : ''}`}
+          >
+            <button
+              type="button"
+              className={`cyber-nav__dropdown-trigger ${
+                dropdownOpen ? 'is-open' : ''
+              }`}
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              aria-expanded={dropdownOpen}
+              aria-haspopup="true"
+              aria-controls="desktop-nav-dropdown"
+            >
+              <LayoutGrid size={14} aria-hidden="true" />
+              <span>All Sectors</span>
+              <ChevronDown size={14} className="cyber-nav__caret" aria-hidden="true" />
+            </button>
+
+            <div id="desktop-nav-dropdown" className="cyber-nav__dropdown-panel">
+              <div className="cyber-nav__dropdown-head">
+                <span>NAVIGATION DIRECTORY</span>
+                <span className="cyber-nav__dropdown-status">
+                  <span className="cyber-nav__dropdown-dot" aria-hidden="true" />
+                  ALL SYSTEMS ONLINE
+                </span>
+              </div>
+
+              <div className="cyber-nav__dropdown-grid">
+                {SITE_CONFIG.navigationGroups.map((group) => (
+                  <div key={group.id} className="cyber-nav__group">
+                    <span className="cyber-nav__group-label">{group.label}</span>
+                    <ul className="cyber-nav__group-list">
+                      {group.items.map((id) => {
+                        const item = navById[id];
+                        if (!item) return null;
+                        const isActive = activeSection === item.id;
+                        return (
+                          <li key={item.id}>
+                            <a
+                              href={item.href}
+                              onClick={(e) => handleNavClick(e, item.href)}
+                              className={`cyber-nav__dropdown-link ${
+                                isActive ? 'is-active' : ''
+                              }`}
+                            >
+                              <span className="cyber-nav__dropdown-code">
+                                {item.code}
+                              </span>
+                              <span>{item.label}</span>
+                              <span className="cyber-nav__dropdown-arrow" aria-hidden="true">
+                                →
+                              </span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <div className="cyber-nav__dropdown-foot">
+                <span>SHORTCUT // ESC TO CLOSE</span>
+                <span>SLASHSTR1KER OS v2</span>
+              </div>
+            </div>
+          </div>
         </nav>
 
         {/* Right HUD Controls: Theme Toggle, Clock & Mobile Hamburger */}

@@ -3,25 +3,39 @@ import {
   Clock,
   Eye,
   ExternalLink,
+  Heart,
   MessageSquare,
+  Play,
   RefreshCw,
-  Radio,
-  Tv,
   Youtube,
 } from 'lucide-react';
-import { SITE_CONFIG, YouTubeVideoItem } from '../data/siteConfig';
+import {
+  SITE_CONFIG,
+  YouTubeVideoItem,
+} from '../data/siteConfig';
 import { RevealOnScroll } from './RevealOnScroll';
 
+type TabId = 'videos' | 'shorts' | 'playlists' | 'posts';
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'videos', label: 'Videos' },
+  { id: 'shorts', label: 'Shorts' },
+  { id: 'playlists', label: 'Playlists' },
+  { id: 'posts', label: 'Posts' },
+];
+
 export const YouTubeSection: React.FC = () => {
-  const [recentVideos, setRecentVideos] = useState<YouTubeVideoItem[]>(
-    () => [...SITE_CONFIG.youtube.fallbackVideos]
-  );
+  const youtube = SITE_CONFIG.youtube;
+  const [recentVideos, setRecentVideos] = useState<YouTubeVideoItem[]>(() => [
+    ...youtube.fallbackVideos,
+  ]);
   const [activeVideo, setActiveVideo] = useState<YouTubeVideoItem>(
-    () => SITE_CONFIG.youtube.fallbackVideos[0]
+    () => youtube.fallbackVideos[0]
   );
   const [syncStatus, setSyncStatus] = useState<'syncing' | 'live' | 'cached'>(
     'syncing'
   );
+  const [tab, setTab] = useState<TabId>('videos');
 
   const fetchLatestVideos = async () => {
     setSyncStatus('syncing');
@@ -47,26 +61,16 @@ export const YouTubeSection: React.FC = () => {
 
   useEffect(() => {
     fetchLatestVideos();
+    // The channel feed is fetched once per mount; refresh is manual.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleRefresh = async () => {
-    await fetchLatestVideos();
+  const openVideo = (video: YouTubeVideoItem) => {
+    window.open(video.url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleGoWatch = () => {
-    window.open(activeVideo.url, '_blank', 'noopener,noreferrer');
-  };
-
-  const currentIndex =
-    recentVideos.findIndex((v) => v.videoId === activeVideo.videoId);
-  const nextVideo =
-    currentIndex < recentVideos.length - 1
-      ? recentVideos[currentIndex + 1]
-      : recentVideos[0];
-
-  const handleNextSneak = () => {
-    setActiveVideo(nextVideo);
-  };
+  const activeTabUrl =
+    youtube.tabs.find((item) => item.id === tab)?.url ?? youtube.channelUrl;
 
   return (
     <section id="youtube" className="section-shell youtube-section">
@@ -75,153 +79,316 @@ export const YouTubeSection: React.FC = () => {
           <div className="section-header">
             <div className="section-eyebrow">
               <span className="section-eyebrow__dot" aria-hidden="true" />
-              <span>{SITE_CONFIG.youtube.sectionTag}</span>
+              <span>{youtube.sectionTag}</span>
             </div>
             <h2
               className="section-title glitch-title"
-              data-text={SITE_CONFIG.youtube.heading}
+              data-text={youtube.heading}
             >
-              {SITE_CONFIG.youtube.heading}
+              {youtube.heading}
             </h2>
-            <p className="section-subtitle">{SITE_CONFIG.youtube.subheading}</p>
+            <p className="section-subtitle">{youtube.subheading}</p>
           </div>
         </RevealOnScroll>
 
-        <RevealOnScroll delayMs={100}>
-          <div className="yt-broadcast-card hud-panel">
+        <RevealOnScroll delayMs={80}>
+          <div className="ytx-channel hud-panel">
             <span className="hud-corner-tl" aria-hidden="true" />
             <span className="hud-corner-br" aria-hidden="true" />
+            <div className="ytx-channel__banner" aria-hidden="true" />
 
-            {/* Top Signal Bar */}
-            <div className="yt-broadcast-card__topbar">
-              <div className="yt-signal-badge">
-                <Radio size={15} className="yt-signal-badge__icon" aria-hidden="true" />
-                <span>DEEP SPACE TRANSMISSION // SNEAK-PEEK YOUTUBE FEED</span>
+            <div className="ytx-channel__row">
+              <img
+                src="/slashy.jpg"
+                alt="SlashStr1ker channel avatar"
+                className="ytx-channel__avatar"
+              />
+              <div className="ytx-channel__identity">
+                <div className="ytx-channel__name-row">
+                  <h3>{youtube.channelName}</h3>
+                  <span className="ytx-channel__verified" title="Official channel">
+                    ✓
+                  </span>
+                </div>
+                <span className="ytx-channel__handle">
+                  {youtube.channelHandle} · {recentVideos.length} uploads tracked
+                </span>
+                <p className="ytx-channel__desc">{youtube.description}</p>
+                <div className="ytx-channel__meta">
+                  <span>Netquel</span>
+                  <span>Gaming</span>
+                  <span>Space chaos</span>
+                  <span className={`ytx-sync ytx-sync--${syncStatus}`}>
+                    <span aria-hidden="true" />
+                    {syncStatus === 'live'
+                      ? 'AUTO-FEED LIVE'
+                      : syncStatus === 'syncing'
+                        ? 'SCANNING CHANNEL'
+                        : 'CACHED TRANSMISSION'}
+                  </span>
+                </div>
               </div>
 
-              <div className="yt-topbar-right">
-                <span className={`yt-sync-pill yt-sync-pill--${syncStatus}`}>
-                  <span className="yt-sync-pill__dot" aria-hidden="true" />
-                  <span>
-                    {syncStatus === 'live'
-                      ? 'AUTO-FEED: LIVE SNEAK PREVIEW'
-                      : syncStatus === 'syncing'
-                      ? 'SCANNING CHANNEL...'
-                      : 'SNEAK-PEEK: LAST KNOWN TRANSMISSION'}
-                  </span>
-                </span>
-
-                <button type="button" onClick={handleRefresh} className="yt-refresh-btn" title="Refresh latest YouTube uploads" aria-label="Refresh latest YouTube uploads">
-                  <RefreshCw size={14} className={syncStatus === 'syncing' ? 'is-spinning' : ''} aria-hidden="true" />
+              <div className="ytx-channel__actions">
+                <a
+                  href={youtube.channelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="cyber-btn cyber-btn--youtube"
+                >
+                  <Youtube size={17} aria-hidden="true" />
+                  <span>SUBSCRIBE</span>
+                  <ExternalLink size={14} aria-hidden="true" />
+                </a>
+                <a
+                  href={youtube.discordUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="cyber-btn cyber-btn--discord"
+                >
+                  <MessageSquare size={17} aria-hidden="true" />
+                  <span>DISCORD</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={fetchLatestVideos}
+                  className="ytx-refresh"
+                  aria-label="Refresh latest YouTube uploads"
+                  title="Refresh latest uploads"
+                >
+                  <RefreshCw
+                    size={15}
+                    className={syncStatus === 'syncing' ? 'is-spinning' : ''}
+                    aria-hidden="true"
+                  />
                 </button>
+              </div>
+            </div>
+          </div>
+        </RevealOnScroll>
 
-                <div className="yt-frequency-bars" aria-hidden="true">
-                  <span /><span /><span /><span /><span />
+        <div className="ytx-tabs" role="tablist" aria-label="YouTube content">
+          {TABS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === item.id}
+              className={`ytx-tab ${tab === item.id ? 'is-active' : ''}`}
+              onClick={() => setTab(item.id)}
+            >
+              <span>{item.label}</span>
+              <span className="ytx-tab__count">
+                {item.id === 'videos'
+                  ? recentVideos.length
+                  : item.id === 'shorts'
+                    ? youtube.shorts.length
+                    : item.id === 'playlists'
+                      ? youtube.playlists.length
+                      : youtube.posts.length}
+              </span>
+            </button>
+          ))}
+          <a
+            href={activeTabUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ytx-tabs__external"
+          >
+            View {tab} on YouTube <ExternalLink size={13} aria-hidden="true" />
+          </a>
+        </div>
+
+        {tab === 'videos' && (
+          <div className="ytx-videos" role="tabpanel" aria-label="Videos">
+            <div className="ytx-feature">
+              <button
+                type="button"
+                className="ytx-feature__frame"
+                onClick={() => openVideo(activeVideo)}
+                aria-label={`Watch ${activeVideo.title} on YouTube`}
+              >
+                <img src={activeVideo.thumbnail} alt="" loading="lazy" />
+                <span className="ytx-feature__scrim" aria-hidden="true" />
+                <span className="ytx-feature__play" aria-hidden="true">
+                  <Play size={26} />
+                </span>
+                <span className="ytx-feature__duration">{activeVideo.duration}</span>
+                <span className="ytx-feature__badge">LATEST TRANSMISSION</span>
+              </button>
+
+              <div className="ytx-feature__info">
+                <h3>{activeVideo.title}</h3>
+                <div className="ytx-feature__meta">
+                  <span><Eye size={13} aria-hidden="true" /> {activeVideo.views}</span>
+                  <span><Clock size={13} aria-hidden="true" /> {activeVideo.publishedAgo}</span>
+                  <span>SlashStr1ker</span>
+                </div>
+                <p>
+                  Full run, no cuts, all chaos. Watch it on YouTube and drop a comment with your
+                  best Netquel moment.
+                </p>
+                <div className="ytx-feature__actions">
+                  <button
+                    type="button"
+                    className="cyber-btn cyber-btn--youtube"
+                    onClick={() => openVideo(activeVideo)}
+                  >
+                    <Play size={16} aria-hidden="true" />
+                    <span>WATCH NOW</span>
+                  </button>
+                  <a
+                    href={activeVideo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cyber-btn cyber-btn--ghost"
+                  >
+                    <ExternalLink size={15} aria-hidden="true" />
+                    <span>OPEN ON YOUTUBE</span>
+                  </a>
                 </div>
               </div>
             </div>
 
-            <div className="yt-broadcast-card__grid">
-              {/* Left Visual: Sneak Peek Teaser */}
-              <div className="yt-latest-deck">
-                <div className="yt-latest-deck__header">
-                  <span className="yt-latest-deck__badge">
-                    <Tv size={14} aria-hidden="true" />
-                    <span>
-                      {activeVideo.videoId === recentVideos[0]?.videoId
-                        ? 'LATEST TRANSMISSION // SNEAK PREVIEW'
-                        : 'SELECTED TRANSMISSION'}
+            <div className="ytx-video-grid">
+              {recentVideos.map((video) => (
+                <button
+                  key={video.videoId}
+                  type="button"
+                  className={`ytx-video ${activeVideo.videoId === video.videoId ? 'is-active' : ''}`}
+                  onClick={() => setActiveVideo(video)}
+                  onDoubleClick={() => openVideo(video)}
+                  title={`Select ${video.title}`}
+                >
+                  <span className="ytx-video__thumb">
+                    <img src={video.thumbnail} alt="" loading="lazy" />
+                    <span className="ytx-video__duration">{video.duration}</span>
+                    <span className="ytx-video__hover" aria-hidden="true">
+                      <Play size={18} />
                     </span>
                   </span>
-                  {activeVideo.publishedAgo && (
-                    <span className="yt-latest-deck__time">
-                      <Clock size={12} aria-hidden="true" />
-                      <span>{activeVideo.publishedAgo}</span>
-                    </span>
-                  )}
-                </div>
-
-                {/* Thumbnail + title + views. No title click, no iframe. */}
-                <div className="yt-sneak-peek-card">
-                  <div className="yt-sneak-peek-card__img-wrap">
-                    <img
-                      src={activeVideo.thumbnail}
-                      alt={activeVideo.title}
-                      className="yt-sneak-peek-card__img"
-                      loading="lazy"
-                    />
-                    <div className="yt-sneak-peek-card__overlay" />
-                    <span className="yt-sneak-peek-card__duration">{activeVideo.duration}</span>
-                  </div>
-                  <div className="yt-sneak-peek-card__body">
-                    <span className="yt-sneak-peek-card__label">SNEAK PREVIEW // TRANSMISSION THUMBNAIL</span>
-                    <h4 className="yt-sneak-peek-card__title">{activeVideo.title}</h4>
-                  </div>
-                  <div className="yt-sneak-peek-card__meta">
-                    {activeVideo.views && (
-                      <span className="yt-sneak-peek-card__stat">
-                        <Eye size={12} aria-hidden="true" />
-                        <span>{activeVideo.views}</span>
-                      </span>
-                    )}
-                    <span className="yt-sneak-peek-card__note">Preview only — watch the full transmission on YouTube</span>
-                  </div>
-                </div>
-
-                {/* Sneak Preview Navigation */}
-                <div className="yt-sneak-preview-nav">
-                  <button type="button" onClick={handleNextSneak} className="yt-sneak-preview-nav__btn" aria-label="Cycle to next sneak preview title">
-                    <svg className="yt-sneak-preview-nav__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <path d="M15 3L8 10V21H16L9 14.5M6 3L15 12M15 3L9 10M8 10H16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <span>NEXT SNEAK PREVIEW</span>
-                  </button>
-                </div>
-
-                <button type="button" onClick={handleGoWatch} className="yt-direct-watch-link">
-                  <Youtube size={15} aria-hidden="true" />
-                  <span>WATCH THIS TRANSMISSION ON YOUTUBE</span>
-                  <ExternalLink size={14} aria-hidden="true" />
+                  <span className="ytx-video__title">{video.title}</span>
+                  <span className="ytx-video__meta">
+                    {video.views} · {video.publishedAgo}
+                  </span>
                 </button>
-              </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-              {/* Right Content: Channel Details & Subscribe CTA */}
-              <div className="yt-broadcast-content">
-                <div className="yt-channel-tag">
-                  <Youtube size={16} aria-hidden="true" />
-                  <span>
-                    CHANNEL // {SITE_CONFIG.youtube.channelName.toUpperCase()} ({SITE_CONFIG.youtube.channelHandle})
+        {tab === 'shorts' && (
+          <div className="ytx-shorts" role="tabpanel" aria-label="Shorts">
+            {youtube.shorts.map((short) => (
+              <a
+                key={short.videoId}
+                href={short.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ytx-short"
+              >
+                <img src={short.thumbnail} alt="" loading="lazy" />
+                <span className="ytx-short__scrim" aria-hidden="true" />
+                <span className="ytx-short__badge">SHORT</span>
+                <span className="ytx-short__play" aria-hidden="true">
+                  <Play size={20} />
+                </span>
+                <span className="ytx-short__body">
+                  <span className="ytx-short__title">{short.title}</span>
+                  <span className="ytx-short__views">{short.views}</span>
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
+
+        {tab === 'playlists' && (
+          <div className="ytx-playlists" role="tabpanel" aria-label="Playlists">
+            {youtube.playlists.map((playlist) => (
+              <a
+                key={playlist.playlistId}
+                href={playlist.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`ytx-playlist ytx-playlist--${playlist.accent}`}
+              >
+                <div className="ytx-playlist__poster">
+                  <span className="ytx-playlist__stack" aria-hidden="true" />
+                  <span className="ytx-playlist__stack ytx-playlist__stack--two" aria-hidden="true" />
+                  <Youtube size={30} aria-hidden="true" />
+                  <span className="ytx-playlist__label">PLAYLIST</span>
+                  <span className="ytx-playlist__hover" aria-hidden="true">
+                    <Play size={20} />
                   </span>
                 </div>
+                <h3>{playlist.title}</h3>
+                <p>{playlist.description}</p>
+                <span className="ytx-playlist__link">
+                  Open playlist <ExternalLink size={13} aria-hidden="true" />
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
 
-                <h3 className="yt-broadcast-title">
-                  ENTER THE {SITE_CONFIG.youtube.channelName.toUpperCase()} BROADCAST
-                </h3>
-
-                <p className="yt-broadcast-description">{SITE_CONFIG.youtube.description}</p>
-
-                <div className="yt-telemetry-row">
-                  {SITE_CONFIG.youtube.highlights.map((item) => (
-                    <div key={item.label} className="yt-telemetry-item">
-                      <span className="yt-telemetry-item__label">{item.label}</span>
-                      <span className="yt-telemetry-item__value">{item.value}</span>
-                    </div>
-                  ))}
+        {tab === 'posts' && (
+          <div className="ytx-posts" role="tabpanel" aria-label="Posts">
+            {youtube.posts.map((post) => (
+              <a
+                key={post.postId}
+                href={post.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ytx-post"
+              >
+                <div className="ytx-post__head">
+                  <img src="/slashy.jpg" alt="" />
+                  <div>
+                    <strong>{youtube.channelName}</strong>
+                    <span>{post.publishedAgo}</span>
+                  </div>
+                  <Youtube size={17} aria-hidden="true" />
                 </div>
-
-                <div className="yt-actions">
-                  <a href={SITE_CONFIG.youtube.channelUrl} target="_blank" rel="noopener noreferrer" className="cyber-btn cyber-btn--youtube">
-                    <Youtube size={18} aria-hidden="true" />
-                    <span>{SITE_CONFIG.youtube.primaryButtonText}</span>
-                    <ExternalLink size={15} aria-hidden="true" />
-                  </a>
-
-                  <a href={SITE_CONFIG.youtube.discordUrl} target="_blank" rel="noopener noreferrer" className="cyber-btn cyber-btn--discord">
-                    <MessageSquare size={18} aria-hidden="true" />
-                    <span>{SITE_CONFIG.youtube.secondaryButtonText}</span>
-                  </a>
+                <p className="ytx-post__text">{post.text}</p>
+                {post.hasImage && (
+                  <div className="ytx-post__media" aria-hidden="true">
+                    <span className="ytx-post__media-grid" />
+                    <span className="ytx-post__media-label">COMMUNITY POST // IMAGE</span>
+                  </div>
+                )}
+                <div className="ytx-post__foot">
+                  <span><Heart size={14} aria-hidden="true" /> {post.likes} likes</span>
+                  <span>View post <ExternalLink size={12} aria-hidden="true" /></span>
                 </div>
-              </div>
+              </a>
+            ))}
+          </div>
+        )}
+
+        <RevealOnScroll delayMs={100}>
+          <div className="ytx-footer">
+            <span>
+              FEED SOURCE // {youtube.channelHandle} · {youtube.channelId}
+            </span>
+            <div className="ytx-footer__actions">
+              <a
+                href={youtube.channelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cyber-btn cyber-btn--youtube"
+              >
+                <Youtube size={16} aria-hidden="true" />
+                <span>{youtube.primaryButtonText}</span>
+              </a>
+              <a
+                href={youtube.discordUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cyber-btn cyber-btn--discord"
+              >
+                <MessageSquare size={16} aria-hidden="true" />
+                <span>{youtube.secondaryButtonText}</span>
+              </a>
             </div>
           </div>
         </RevealOnScroll>

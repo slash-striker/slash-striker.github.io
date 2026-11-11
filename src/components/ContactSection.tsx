@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import {
+  ArrowUpRight,
   Check,
   Copy,
   ExternalLink,
+  Lightbulb,
   MessageSquare,
   Radio,
   ShieldCheck,
@@ -51,6 +53,28 @@ export const ContactSection: React.FC = () => {
               {contact.heading}
             </h2>
             <p className="section-subtitle">{contact.subtitle}</p>
+          </div>
+        </RevealOnScroll>
+
+        <RevealOnScroll delayMs={60}>
+          <div className="contact-ideas">
+            <div className="contact-ideas__icon" aria-hidden="true">
+              <Lightbulb size={24} />
+            </div>
+            <div className="contact-ideas__copy">
+              <span className="contact-ideas__label">OPEN INVITATION // IDEA CHANNEL</span>
+              <h3>{contact.ideasPrompt}</h3>
+              <p>{contact.ideasSubtext}</p>
+            </div>
+            <a
+              href={contact.communityUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cyber-btn cyber-btn--primary contact-ideas__cta"
+            >
+              <span>SHARE THE IDEA</span>
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
           </div>
         </RevealOnScroll>
 

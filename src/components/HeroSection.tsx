@@ -1,16 +1,21 @@
 import React from 'react';
-import { Youtube, MessageSquare, Bot, ChevronDown, Sparkles, Shield, Cpu, Globe } from 'lucide-react';
+import {
+  ArrowUpRight,
+  Bot,
+  ChevronDown,
+  Cpu,
+  Globe,
+  MessageSquare,
+  Shield,
+  Sparkles,
+  Youtube,
+} from 'lucide-react';
 import { SITE_CONFIG } from '../data/siteConfig';
+import { LogoMark } from './LogoMark';
+
+const WORDMARK_LETTERS = SITE_CONFIG.brand.upperName.split('');
 
 export const HeroSection: React.FC = () => {
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      window.history.replaceState(null, '', `#${id}`);
-    }
-  };
-
   return (
     <section id="home" className="hero-section">
       {/* Cyberpunk City Skyline & Holographic Horizon */}
@@ -50,18 +55,45 @@ export const HeroSection: React.FC = () => {
 
           <p className="hero-preheading">{SITE_CONFIG.brand.heroMainHeading}</p>
 
-          <h1
-            className="hero-brand-heading glitch-title"
-            data-text={SITE_CONFIG.brand.upperName}
-          >
-            {SITE_CONFIG.brand.upperName}
+          <h1 className="hero-wordmark" aria-label={SITE_CONFIG.brand.upperName}>
+            <span className="hero-wordmark__ghost" aria-hidden="true">
+              {SITE_CONFIG.brand.upperName}
+            </span>
+            <span className="hero-wordmark__letters" aria-hidden="true">
+              {WORDMARK_LETTERS.map((letter, index) => (
+                <span
+                  key={`${letter}-${index}`}
+                  className={`hero-wordmark__char ${letter === '1' ? 'is-digit' : ''}`}
+                  style={{ '--char-index': index } as React.CSSProperties}
+                >
+                  {letter}
+                </span>
+              ))}
+            </span>
+            <span className="hero-wordmark__scan" aria-hidden="true" />
           </h1>
+
+          <div className="hero-slogan">
+            <span className="hero-slogan__kicker">
+              <span className="hero-slogan__kicker-dot" aria-hidden="true" />
+              {SITE_CONFIG.brand.sloganKicker}
+            </span>
+            <p className="hero-slogan__line" aria-hidden="true">
+              <span className="hero-slogan__word hero-slogan__word--lets">LET&apos;S</span>
+              <span className="hero-slogan__word hero-slogan__word--slash">
+                SLASH
+                <span className="hero-slogan__slash-trail" />
+              </span>
+              <span className="hero-slogan__word hero-slogan__word--top">TO THE TOP</span>
+              <span className="hero-slogan__arrow">
+                <ArrowUpRight size={20} />
+              </span>
+            </p>
+          </div>
 
           <p className="hero-tagline">{SITE_CONFIG.brand.tagline}</p>
 
-          <p className="hero-description">
-            {SITE_CONFIG.brand.heroDescription}
-          </p>
+          <p className="hero-description">{SITE_CONFIG.brand.heroDescription}</p>
 
           {/* 3 Prominent CTA Buttons */}
           <div className="hero-cta-group">
@@ -85,36 +117,38 @@ export const HeroSection: React.FC = () => {
               <span>JOIN THE DISCORD</span>
             </a>
 
-            <button
-              type="button"
-              onClick={() => scrollToSection('bots')}
-              className="cyber-btn cyber-btn--primary"
-            >
+            <a href="#/bots" className="cyber-btn cyber-btn--primary">
               <Bot size={18} aria-hidden="true" />
               <span>DISCOVER MY BOTS</span>
-            </button>
+            </a>
           </div>
         </div>
 
-        {/* Right Column: Animated 3D Orbital Planet + HUD Telemetry */}
+        {/* Right Column: The SLASH CORE identity mark */}
         <div className="hero-visual-column">
-          <div className="orbital-planet-stage" aria-hidden="true">
-            <div className="orbital-ring orbital-ring--outer" />
-            <div className="orbital-ring orbital-ring--middle" />
-            <div className="orbital-ring orbital-ring--inner" />
-
-            <div className="cyber-planet">
-              <div className="cyber-planet__atmosphere" />
-              <div className="cyber-planet__grid" />
-              <div className="cyber-planet__core-glow" />
+          <div className="slash-core-stage" aria-hidden="true">
+            <div className="slash-core-stage__halo" />
+            <div className="slash-core-stage__ring slash-core-stage__ring--outer" />
+            <div className="slash-core-stage__ring slash-core-stage__ring--middle" />
+            <div className="slash-core-stage__ring slash-core-stage__ring--inner" />
+            <div className="slash-core-stage__mark">
+              <LogoMark animated />
             </div>
-
-            <div className="orbital-hud-tag orbital-hud-tag--top">
-              <span>ORBIT // FRONTIER-IX</span>
+            <div className="slash-core-stage__tag slash-core-stage__tag--top">
+              <Sparkles size={12} />
+              <span>SLASH CORE // S-01</span>
             </div>
-            <div className="orbital-hud-tag orbital-hud-tag--bottom">
-              <span>HOLOGRAPHIC CORE // ACTIVE</span>
+            <div className="slash-core-stage__tag slash-core-stage__tag--bottom">
+              <span>IDENTITY MARK // LOCKED</span>
             </div>
+            <div className="slash-core-stage__readout">
+              <span>X 09.41</span>
+              <span>Y 12.07</span>
+              <span className="is-live">LIVE</span>
+            </div>
+            <div className="slash-core-stage__tick slash-core-stage__tick--a" />
+            <div className="slash-core-stage__tick slash-core-stage__tick--b" />
+            <div className="slash-core-stage__tick slash-core-stage__tick--c" />
           </div>
         </div>
       </div>
@@ -145,10 +179,10 @@ export const HeroSection: React.FC = () => {
                 idx === 0
                   ? Sparkles
                   : idx === 1
-                  ? Cpu
-                  : idx === 2
-                  ? Shield
-                  : Globe;
+                    ? Cpu
+                    : idx === 2
+                      ? Shield
+                      : Globe;
 
               return (
                 <div
@@ -156,9 +190,7 @@ export const HeroSection: React.FC = () => {
                   className={`status-card status-card--${item.accent}`}
                 >
                   <div className="status-card__top">
-                    <span className="status-card__category">
-                      {item.category}
-                    </span>
+                    <span className="status-card__category">{item.category}</span>
                     <span
                       className={`status-card__dot status-card__dot--${item.accent}`}
                       aria-hidden="true"
@@ -179,22 +211,19 @@ export const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Scroll to Explore Indicator */}
-      <div className="scroll-indicator-wrap">
-        <button
-          type="button"
-          onClick={() => scrollToSection('about')}
-          className="scroll-indicator-btn"
-          aria-label="Scroll to About section"
-        >
-          <span className="scroll-indicator-btn__text">
-            {SITE_CONFIG.brand.scrollPrompt}
-          </span>
-          <span className="scroll-indicator-btn__chevron">
-            <ChevronDown size={18} aria-hidden="true" />
-          </span>
-        </button>
-      </div>
+      {/* A quiet hint for the curious — see the easter eggs. */}
+      <button
+        type="button"
+        className="hero-secret-hint"
+        onClick={() => {
+          window.location.hash = '#/secret';
+        }}
+        aria-label="Open the hidden terminal"
+        title="Do not press this."
+      >
+        <ChevronDown size={12} aria-hidden="true" />
+        <span>SIGNAL 0x5L4SH</span>
+      </button>
     </section>
   );
 };
