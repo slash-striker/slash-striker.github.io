@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://slash-striker.github.io/sitemap.xml
