@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ArrowUp, Bot, ExternalLink, MessageSquare, Youtube } from 'lucide-react';
 import { SITE_CONFIG } from '../data/siteConfig';
+import { LogoMark } from './LogoMark';
 
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const secretClicksRef = useRef({ count: 0, last: 0 });
+
+  const handleCopyrightClick = () => {
+    const now = Date.now();
+    const record = secretClicksRef.current;
+    if (now - record.last > 2200) record.count = 0;
+    record.count += 1;
+    record.last = now;
+    if (record.count >= 3) {
+      record.count = 0;
+      window.location.hash = '#/secret';
+      window.dispatchEvent(new CustomEvent('ss-easter-egg', { detail: 'footer' }));
+    }
+  };
 
   const handleBackToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -34,34 +49,14 @@ export const Footer: React.FC = () => {
               onClick={(e) => handleNavClick(e, '#/')}
               className="cyber-logo"
             >
-              <span className="cyber-logo__emblem" aria-hidden="true">
-                <svg viewBox="0 0 40 40" fill="none">
-                  <polygon
-                    points="20,2 36,11 36,29 20,38 4,29 4,11"
-                    stroke="#00F5FF"
-                    strokeWidth="1.8"
-                    fill="rgba(0, 245, 255, 0.08)"
-                  />
-                  <path
-                    d="M13 13H26L16 20H27L13 28"
-                    stroke="#00F5FF"
-                    strokeWidth="2.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M9 31L31 9"
-                    stroke="#FF3CAC"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
+              <span className="cyber-logo__emblem">
+                <LogoMark />
               </span>
               <span className="cyber-logo__text-group">
                 <span className="cyber-logo__brand">
                   SLASH<span className="cyber-logo__accent">STR1KER</span>
                 </span>
-                <span className="cyber-logo__sub">DIGITAL FRONTIER</span>
+                <span className="cyber-logo__sub">SLASH CORE // ACTIVE</span>
               </span>
             </a>
 
@@ -152,7 +147,19 @@ export const Footer: React.FC = () => {
           <p className="cyber-footer__transmission">
             {SITE_CONFIG.footer.endTransmission}
           </p>
-          <p className="cyber-footer__copyright">
+          <p
+            className="cyber-footer__copyright"
+            onClick={handleCopyrightClick}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                handleCopyrightClick();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            title="End of transmission"
+          >
             &copy; {currentYear} {SITE_CONFIG.brand.name}. All rights reserved.
           </p>
         </div>

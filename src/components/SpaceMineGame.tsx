@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Check,
   Gauge,
   Gem,
+  Lock,
   Pause,
   Play,
   Rocket,
   RotateCcw,
   Shield,
+  Trophy,
   Zap,
 } from 'lucide-react';
 import { RevealOnScroll } from './RevealOnScroll';
@@ -160,6 +163,252 @@ const hullMaxFor = (p: Progress): number =>
 const comboMultiplier = (count: number): number =>
   Math.min(COMBO_MAX_MULT, 1 + count * 0.05);
 
+/* -------------------------------------------------------------------------- */
+/* ACHIEVEMENTS — session-only, deliberately not persisted                    */
+/* -------------------------------------------------------------------------- */
+
+type AchievementTier = 'bronze' | 'silver' | 'gold' | 'mythic';
+
+interface SessionStats {
+  rocks: number;
+  volatile: number;
+  crystals: number;
+  oreEarned: number;
+  maxDepth: number;
+  bestCombo: number;
+  maxChain: number;
+  overdriveKills: number;
+  overdrives: number;
+  runs: number;
+  lowHullSeconds: number;
+  pristineDepth: number;
+}
+
+const freshStats = (): SessionStats => ({
+  rocks: 0,
+  volatile: 0,
+  crystals: 0,
+  oreEarned: 0,
+  maxDepth: 0,
+  bestCombo: 1,
+  maxChain: 0,
+  overdriveKills: 0,
+  overdrives: 0,
+  runs: 0,
+  lowHullSeconds: 0,
+  pristineDepth: 0,
+});
+
+interface AchievementDef {
+  id: string;
+  name: string;
+  desc: string;
+  tier: AchievementTier;
+  target: number;
+  unit?: 'x' | 's' | 'kills' | 'rocks' | 'ore' | 'depth' | 'runs' | 'times';
+  secret?: boolean;
+  progress: (stats: SessionStats) => number;
+}
+
+const TIER_LABEL: Record<AchievementTier, string> = {
+  bronze: 'BRONZE',
+  silver: 'SILVER',
+  gold: 'GOLD',
+  mythic: 'MYTHIC',
+};
+
+const ACHIEVEMENTS: AchievementDef[] = [
+  {
+    id: 'first-blood',
+    name: 'First Blood',
+    desc: 'Break your first rock.',
+    tier: 'bronze',
+    target: 1,
+    unit: 'rocks',
+    progress: (s) => s.rocks,
+  },
+  {
+    id: 'asteroid-hunter',
+    name: 'Asteroid Hunter',
+    desc: 'Break 25 rocks in one session.',
+    tier: 'bronze',
+    target: 25,
+    unit: 'rocks',
+    progress: (s) => s.rocks,
+  },
+  {
+    id: 'rock-breaker',
+    name: 'Rock Breaker',
+    desc: 'Break 100 rocks in one session.',
+    tier: 'silver',
+    target: 100,
+    unit: 'rocks',
+    progress: (s) => s.rocks,
+  },
+  {
+    id: 'deep-diver',
+    name: 'Deep Diver',
+    desc: 'Reach depth 10 in a run.',
+    tier: 'bronze',
+    target: 10,
+    unit: 'depth',
+    progress: (s) => s.maxDepth,
+  },
+  {
+    id: 'abyss-walker',
+    name: 'Abyss Walker',
+    desc: 'Reach depth 25 in a run.',
+    tier: 'gold',
+    target: 25,
+    unit: 'depth',
+    progress: (s) => s.maxDepth,
+  },
+  {
+    id: 'event-horizon',
+    name: 'Event Horizon',
+    desc: 'Reach depth 50. Bring a better drill.',
+    tier: 'mythic',
+    target: 50,
+    unit: 'depth',
+    progress: (s) => s.maxDepth,
+  },
+  {
+    id: 'combo-operator',
+    name: 'Combo Operator',
+    desc: 'Reach a x3.0 kill-streak multiplier.',
+    tier: 'silver',
+    target: 3,
+    unit: 'x',
+    progress: (s) => s.bestCombo,
+  },
+  {
+    id: 'combo-overclock',
+    name: 'Combo Overclock',
+    desc: 'Reach the maximum x5.0 multiplier.',
+    tier: 'gold',
+    target: 5,
+    unit: 'x',
+    progress: (s) => s.bestCombo,
+  },
+  {
+    id: 'chain-reaction',
+    name: 'Chain Reaction',
+    desc: 'Destroy 3 rocks within one chain window.',
+    tier: 'silver',
+    target: 3,
+    unit: 'kills',
+    progress: (s) => s.maxChain,
+  },
+  {
+    id: 'chain-reactor',
+    name: 'Chain Reactor',
+    desc: 'Destroy 6 rocks within one chain window.',
+    tier: 'gold',
+    target: 6,
+    unit: 'kills',
+    progress: (s) => s.maxChain,
+  },
+  {
+    id: 'overdrive-ace',
+    name: 'Overdrive Ace',
+    desc: 'Destroy 10 rocks while overdrive is active.',
+    tier: 'silver',
+    target: 10,
+    unit: 'kills',
+    progress: (s) => s.overdriveKills,
+  },
+  {
+    id: 'ore-baron',
+    name: 'Ore Baron',
+    desc: 'Bank 500 ore in one session.',
+    tier: 'bronze',
+    target: 500,
+    unit: 'ore',
+    progress: (s) => s.oreEarned,
+  },
+  {
+    id: 'ore-magnate',
+    name: 'Ore Magnate',
+    desc: 'Bank 2,000 ore in one session.',
+    tier: 'gold',
+    target: 2000,
+    unit: 'ore',
+    progress: (s) => s.oreEarned,
+  },
+  {
+    id: 'volatile-hunter',
+    name: 'Volatile Hunter',
+    desc: 'Break 10 volatile rocks without losing the rig.',
+    tier: 'silver',
+    target: 10,
+    unit: 'rocks',
+    progress: (s) => s.volatile,
+  },
+  {
+    id: 'crystal-collector',
+    name: 'Crystal Collector',
+    desc: 'Break 15 crystal rocks in one session.',
+    tier: 'silver',
+    target: 15,
+    unit: 'rocks',
+    progress: (s) => s.crystals,
+  },
+  {
+    id: 'hull-breaker',
+    name: 'Hull Breaker',
+    desc: 'Survive 5 seconds below 15 hull in one run.',
+    tier: 'gold',
+    target: 5,
+    unit: 's',
+    progress: (s) => s.lowHullSeconds,
+  },
+  {
+    id: 'pristine-run',
+    name: 'Untouchable',
+    desc: 'Reach depth 8 without taking a single hit.',
+    tier: 'gold',
+    target: 8,
+    unit: 'depth',
+    progress: (s) => s.pristineDepth,
+  },
+  {
+    id: 'back-in-saddle',
+    name: 'Back In The Saddle',
+    desc: 'Rebuild the rig 3 times in one session.',
+    tier: 'bronze',
+    target: 3,
+    unit: 'runs',
+    progress: (s) => s.runs,
+  },
+  {
+    id: 'overclocked',
+    name: 'Overclocked',
+    desc: 'Trigger overdrive 10 times.',
+    tier: 'silver',
+    target: 10,
+    unit: 'times',
+    progress: (s) => s.overdrives,
+  },
+  {
+    id: 'deep-signal',
+    name: 'Deep Signal',
+    desc: 'Reach depth 15 while holding a x3+ combo.',
+    tier: 'mythic',
+    target: 1,
+    secret: true,
+    progress: (s) => (s.maxDepth >= 15 && s.bestCombo >= 3 ? 1 : 0),
+  },
+];
+
+const formatAchievementValue = (
+  def: AchievementDef,
+  value: number
+): string => {
+  const clamped = Math.min(value, def.target);
+  if (def.unit === 'x') return `${clamped.toFixed(1)}x / ${def.target}x`;
+  return `${Math.floor(clamped)} / ${def.target}${def.unit ? ` ${def.unit}` : ''}`;
+};
+
 const freshProgress = (): Progress => ({
   ore: 0,
   mined: 0,
@@ -272,6 +521,10 @@ export const SpaceMineGame: React.FC = () => {
     abilityPct: 100,
     abilityReady: true,
   });
+  const [stats, setStats] = useState<SessionStats>(() => freshStats());
+  const [unlocked, setUnlocked] = useState<Record<string, number>>({});
+  const [achievementToast, setAchievementToast] =
+    useState<AchievementDef | null>(null);
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -301,6 +554,11 @@ export const SpaceMineGame: React.FC = () => {
   const comboRef = useRef({ count: 0, timer: 0 });
   const focusRef = useRef<number | null>(null);
   const flashRef = useRef(0);
+  const statsRef = useRef<SessionStats>(stats);
+  const unlockedRef = useRef<Record<string, number>>({});
+  const chainRef = useRef({ count: 0, timer: 0 });
+  const runDamageRef = useRef(0);
+  const toastTimerRef = useRef<number | undefined>(undefined);
 
   const applyProgress = useCallback((next: Progress) => {
     progressRef.current = next;
@@ -310,6 +568,13 @@ export const SpaceMineGame: React.FC = () => {
   useEffect(() => {
     progressRef.current = progress;
   }, [progress]);
+
+  useEffect(
+    () => () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    },
+    []
+  );
 
   const setRunningBoth = useCallback((value: boolean) => {
     runningRef.current = value;
@@ -322,6 +587,7 @@ export const SpaceMineGame: React.FC = () => {
     if (!runningRef.current || od.cooldown > 0) return;
     od.active = OVERDRIVE_DURATION;
     od.cooldown = OVERDRIVE_COOLDOWN;
+    statsRef.current.overdrives += 1;
     flashRef.current = Math.max(flashRef.current, 0.2);
   }, []);
 
@@ -600,6 +866,19 @@ export const SpaceMineGame: React.FC = () => {
       applyProgress(next);
       saveProgress(next);
 
+      // Session achievements are tracked in memory only.
+      const session = statsRef.current;
+      session.rocks += 1;
+      session.oreEarned += earned;
+      session.bestCombo = Math.max(session.bestCombo, mult);
+      if (rock.kind === 'volatile') session.volatile += 1;
+      if (rock.kind === 'crystal') session.crystals += 1;
+      const chain = chainRef.current;
+      chain.count = chain.timer > 0 ? chain.count + 1 : 1;
+      chain.timer = 1.25;
+      session.maxChain = Math.max(session.maxChain, chain.count);
+      if (overdriveRef.current.active > 0) session.overdriveKills += 1;
+
       const style = KIND_STYLE[rock.kind];
       popupsRef.current.push({
         x: rock.x,
@@ -650,6 +929,34 @@ export const SpaceMineGame: React.FC = () => {
         abilityPct,
         abilityReady,
       };
+    };
+
+    const evaluateAchievements = () => {
+      const session = statsRef.current;
+      let changed = false;
+      for (const def of ACHIEVEMENTS) {
+        if (unlockedRef.current[def.id]) continue;
+        if (def.progress(session) < def.target) continue;
+
+        unlockedRef.current = {
+          ...unlockedRef.current,
+          [def.id]: Date.now(),
+        };
+        changed = true;
+        setAchievementToast(def);
+        if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = window.setTimeout(
+          () => setAchievementToast(null),
+          4200
+        );
+
+        if (Object.keys(unlockedRef.current).length === ACHIEVEMENTS.length) {
+          window.dispatchEvent(
+            new CustomEvent('ss-easter-egg', { detail: 'all-achievements' })
+          );
+        }
+      }
+      if (changed) setUnlocked({ ...unlockedRef.current });
     };
 
     const wreck = () => {
@@ -705,6 +1012,14 @@ export const SpaceMineGame: React.FC = () => {
           depthTickRef.current = 0;
           depthRef.current += 1;
           setDepth(depthRef.current);
+          const session = statsRef.current;
+          session.maxDepth = Math.max(session.maxDepth, depthRef.current);
+          if (runDamageRef.current === 0) {
+            session.pristineDepth = Math.max(
+              session.pristineDepth,
+              depthRef.current
+            );
+          }
           if (depthRef.current > progressRef.current.best) {
             applyProgress({ ...progressRef.current, best: depthRef.current });
           }
@@ -737,6 +1052,10 @@ export const SpaceMineGame: React.FC = () => {
         od.cooldown = Math.max(0, od.cooldown - dt);
         combo.timer = Math.max(0, combo.timer - dt);
         if (combo.timer === 0) combo.count = 0;
+        chainRef.current.timer = Math.max(0, chainRef.current.timer - dt);
+        if (hullRef.current > 0 && hullRef.current < 15) {
+          statsRef.current.lowHullSeconds += dt;
+        }
         const overdriveOn = od.active > 0;
         hullRef.current = Math.min(
           hullMaxFor(p),
@@ -807,6 +1126,7 @@ export const SpaceMineGame: React.FC = () => {
             Math.abs(rock.x - ship.x) < rock.r + 14
           ) {
             hullRef.current -= RAM_DAMAGE[rock.kind];
+            runDamageRef.current += RAM_DAMAGE[rock.kind];
             combo.count = 0;
             flashRef.current = 0.35;
             for (let i = 0; i < 10; i += 1) {
@@ -828,6 +1148,7 @@ export const SpaceMineGame: React.FC = () => {
           // Escape: the rock got past the rig
           if (rock.y - rock.r > h + 10) {
             hullRef.current -= ESCAPE_DAMAGE[rock.kind];
+            runDamageRef.current += ESCAPE_DAMAGE[rock.kind];
             combo.count = 0;
             flashRef.current = Math.max(flashRef.current, 0.15);
             continue;
@@ -886,6 +1207,8 @@ export const SpaceMineGame: React.FC = () => {
       if (hudTickRef.current >= 0.1) {
         hudTickRef.current = 0;
         setHud(buildHud());
+        setStats({ ...statsRef.current });
+        evaluateAchievements();
       }
 
       draw(time);
@@ -1026,6 +1349,9 @@ export const SpaceMineGame: React.FC = () => {
     focusRef.current = null;
     depthRef.current = 0;
     depthTickRef.current = 0;
+    chainRef.current = { count: 0, timer: 0 };
+    runDamageRef.current = 0;
+    statsRef.current.runs += 1;
     setDepth(0);
     setWrecked(false);
   };
@@ -1041,15 +1367,33 @@ export const SpaceMineGame: React.FC = () => {
     applyProgress(next);
     saveProgress(next);
     resetRun();
+    statsRef.current = freshStats();
+    unlockedRef.current = {};
+    setStats(statsRef.current);
+    setUnlocked({});
+    setAchievementToast(null);
     startedRef.current = false;
     setRunningBoth(false);
   };
 
   const hullPct = Math.max(0, Math.min(100, (hud.hull / hud.hullMax) * 100));
+  const unlockedCount = Object.keys(unlocked).length;
+  const overallPct = (unlockedCount / ACHIEVEMENTS.length) * 100;
 
   return (
     <section id="game" className="section-shell space-mine-section">
       <div className="container">
+        {achievementToast && (
+          <div className="smine-ach-toast" role="status" aria-live="polite">
+            <span className="smine-ach-toast__icon" aria-hidden="true">
+              <Trophy size={18} />
+            </span>
+            <div>
+              <span>ACHIEVEMENT UNLOCKED</span>
+              <strong>{achievementToast.name}</strong>
+            </div>
+          </div>
+        )}
         <RevealOnScroll>
           <div className="section-header">
             <div className="section-eyebrow">
@@ -1209,6 +1553,81 @@ export const SpaceMineGame: React.FC = () => {
                 </span>
               </div>
             )}
+          </div>
+        </RevealOnScroll>
+
+        <RevealOnScroll delayMs={170}>
+          <div className="smine-achievements hud-panel">
+            <span className="hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner-br" aria-hidden="true" />
+
+            <div className="smine-ach-head">
+              <div className="smine-ach-head__title">
+                <Trophy size={16} aria-hidden="true" />
+                <span>ACHIEVEMENT LOG // SESSION ONLY</span>
+              </div>
+              <span className="smine-ach-head__count">
+                {unlockedCount} / {ACHIEVEMENTS.length} UNLOCKED
+              </span>
+            </div>
+
+            <div className="smine-ach-overview">
+              <div className="smine-ach-overview__track">
+                <div
+                  className="smine-ach-overview__fill"
+                  style={{ width: `${overallPct.toFixed(1)}%` }}
+                />
+              </div>
+              <span>NOT STORED — the log resets when you leave the page.</span>
+            </div>
+
+            <div className="smine-ach-grid">
+              {ACHIEVEMENTS.map((def) => {
+                const isUnlocked = Boolean(unlocked[def.id]);
+                const value = def.progress(stats);
+                const pct = Math.min(100, (value / def.target) * 100);
+                const hidden = Boolean(def.secret) && !isUnlocked;
+                return (
+                  <article
+                    key={def.id}
+                    className={`smine-ach smine-ach--${def.tier} ${
+                      isUnlocked ? 'is-unlocked' : ''
+                    }`}
+                  >
+                    <div className="smine-ach__top">
+                      <span className="smine-ach__tier">
+                        {TIER_LABEL[def.tier]}
+                      </span>
+                      <span className="smine-ach__state" aria-hidden="true">
+                        {isUnlocked ? <Check size={14} /> : <Lock size={12} />}
+                      </span>
+                    </div>
+                    <h3 className="smine-ach__name">
+                      {hidden ? '???' : def.name}
+                    </h3>
+                    <p className="smine-ach__desc">
+                      {hidden ? 'Secret achievement. Keep mining.' : def.desc}
+                    </p>
+                    <div className="smine-ach__track">
+                      <div
+                        className="smine-ach__fill"
+                        style={{ width: `${pct.toFixed(1)}%` }}
+                      />
+                    </div>
+                    <div className="smine-ach__foot">
+                      <span>
+                        {isUnlocked
+                          ? 'UNLOCKED'
+                          : hidden
+                            ? '???'
+                            : formatAchievementValue(def, value)}
+                      </span>
+                      <span>{Math.round(pct)}%</span>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </div>
         </RevealOnScroll>
 
