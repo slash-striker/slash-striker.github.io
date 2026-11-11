@@ -118,6 +118,12 @@ export interface YouTubePostItem {
   hasImage?: boolean;
 }
 
+export interface YouTubeChannelStats {
+  subscriberCount: number;
+  viewCount: number;
+  videoCount: number;
+}
+
 export const SITE_CONFIG = {
   brand: {
     name: 'SlashStr1ker',
@@ -244,11 +250,33 @@ export const SITE_CONFIG = {
     channelId: 'UCNkuaq6HNa8UW4usOvPZtvw',
     heading: 'LATEST FROM THE CHANNEL',
     subheading: 'Subscribe for new videos, streams, and digital adventures.',
-    description:
-      'Gaming, digital adventures, and more. Subscribe to SlashStr1ker and join the journey as the universe continues to expand.',
+    description: `Jesus paid it all. Love God. Love others.
+
+I am SLASH. I like playing games, coding, and trying new things, like this utube channel.... And I love doing stuff with friends, either online or my actual real life, and yes I do have a life and I actually have ACTUAL friends. Didn't expect that did you?
+
+I live somewhere.
+I eat something.
+I drink water.
+Am I missing anything?
+
+WE LIVE(because of JESUS)
+WE LAUGH(Because we need humor. (which is also medicine))
+WE LOVE(Which when received is a gift, which we can also give to others.)
+WE LIE(BC. WE. R. HUMAN.)
+
+Name: {ERRORCODE:REDACTED_FOR_SECURITY|mjØ97X90∴u9joΔhhTui~iJhuih3ki0-pIR|}
+Location: {ERRORCODE:REDACTED_FOR_SECURITY|no92*j¬œ02IkmPD{02πklwi¢§rdJW_93∫o1Ao|}
+
+Wanna join my youtube server? Click below for "My YT Discord Server" link!`,
     primaryButtonText: 'SUBSCRIBE TO SLASHSTR1KER',
     secondaryButtonText: 'JOIN THE DISCORD COMMUNITY',
     channelUrl: 'https://www.youtube.com/@SlashStr1ker?sub_confirmation=1',
+    aboutUrl: 'https://www.youtube.com/@SlashStr1ker/about',
+    channelStats: {
+      subscriberCount: 51,
+      viewCount: 9998,
+      videoCount: 37,
+    } satisfies YouTubeChannelStats,
     discordUrl: 'https://discord.gg/48CMZz5SwD',
     highlights: [
       {

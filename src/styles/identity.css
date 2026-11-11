@@ -1,0 +1,405 @@
+/* ==========================================================================
+   SLASH SIGNATURE IDENTITY
+   ========================================================================== */
+.cyber-logo__emblem {
+  filter: drop-shadow(0 0 9px rgba(255, 39, 64, 0.35));
+}
+
+.slash-logo--animated .slash-logo__blade {
+  filter: drop-shadow(0 0 7px rgba(255, 39, 64, 0.65));
+}
+
+.slash-logo--animated .slash-logo__spark {
+  animation: logoSpark 3.2s ease-in-out infinite;
+  transform-origin: 29px 30px;
+}
+
+.slash-logo--animated .slash-logo__sheen {
+  animation: logoSheen 6s ease-in-out infinite;
+}
+
+@keyframes logoSpark {
+  0%, 100% { opacity: 0.72; transform: scale(0.88); }
+  50% { opacity: 1; transform: scale(1.14); }
+}
+
+@keyframes logoSheen {
+  0%, 62% { opacity: 0; transform: translateX(-86px); }
+  72% { opacity: 0.65; }
+  88%, 100% { opacity: 0; transform: translateX(86px); }
+}
+
+/* Signature tag hero stage: replace the orbit rings with a strike plate. */
+.slash-core-stage__backslash {
+  position: absolute;
+  width: 92%;
+  height: 92px;
+  transform: rotate(-38deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 39, 64, 0.42) 34%,
+    rgba(70, 230, 255, 0.22) 68%,
+    transparent
+  );
+  filter: blur(3px);
+  opacity: 0.85;
+}
+
+.slash-core-stage__frame {
+  position: absolute;
+  inset: 9%;
+  border: 1px solid rgba(70, 230, 255, 0.2);
+  background:
+    linear-gradient(145deg, rgba(0, 245, 255, 0.035), transparent 46%),
+    linear-gradient(315deg, rgba(255, 39, 64, 0.04), transparent 52%);
+  clip-path: polygon(0 0, 86% 0, 100% 14%, 100% 100%, 14% 100%, 0 86%);
+  box-shadow: inset 0 0 60px rgba(0, 245, 255, 0.055);
+}
+
+.slash-core-stage__frame::before,
+.slash-core-stage__frame::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 26%;
+  background: linear-gradient(180deg, transparent, rgba(70, 230, 255, 0.5), transparent);
+  transform: rotate(35deg);
+}
+
+.slash-core-stage__frame::before {
+  top: 4%;
+  right: 12%;
+}
+
+.slash-core-stage__frame::after {
+  bottom: 4%;
+  left: 12%;
+}
+
+.slash-core-stage__mark {
+  width: 73%;
+  filter:
+    drop-shadow(0 22px 42px rgba(0, 0, 0, 0.66))
+    drop-shadow(0 0 26px rgba(255, 39, 64, 0.24));
+}
+
+.slash-core-stage__tag,
+.slash-core-stage__readout,
+.slash-core-stage__tick {
+  z-index: 3;
+}
+
+/* ==========================================================================
+   YOUTUBE LIVE STATS
+   ========================================================================== */
+.ytx-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(150px, auto);
+  align-items: center;
+  gap: 0;
+  padding: 17px 24px;
+  border-top: 1px solid rgba(0, 245, 255, 0.16);
+  background: linear-gradient(180deg, rgba(0, 245, 255, 0.035), transparent);
+}
+
+.ytx-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  padding: 2px 20px;
+  border-right: 1px solid rgba(0, 245, 255, 0.12);
+}
+
+.ytx-stat:first-child {
+  padding-left: 0;
+}
+
+.ytx-stat:nth-child(3) {
+  border-right: 0;
+}
+
+.ytx-stat__top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 16px;
+}
+
+.ytx-stat__icon {
+  display: inline-flex;
+  color: var(--neon-cyan);
+  filter: drop-shadow(0 0 6px rgba(0, 245, 255, 0.35));
+}
+
+.ytx-stat__label {
+  font-family: var(--font-mono);
+  font-size: 0.57rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.ytx-stat__value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.16);
+}
+
+.ytx-stat__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: #5dff9a;
+  white-space: nowrap;
+}
+
+.ytx-stat__live > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #5dff9a;
+  box-shadow: 0 0 8px #5dff9a;
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+.ytx-stats__status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.ytx-stats__status .ytx-sync {
+  margin-left: 0;
+}
+
+.ytx-stats__updated {
+  font-family: var(--font-mono);
+  font-size: 0.54rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   YOUTUBE CHANNEL ABOUT / DESCRIPTION
+   ========================================================================== */
+.ytx-bio {
+  position: relative;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+}
+
+.ytx-bio__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 245, 255, 0.14);
+}
+
+.ytx-bio__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  color: var(--neon-cyan);
+}
+
+.ytx-bio__joined {
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.ytx-bio__text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  margin: 0;
+  white-space: pre-line;
+  color: var(--text-secondary);
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+.ytx-bio__text.is-expanded {
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+}
+
+.ytx-bio__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.ytx-bio__toggle,
+.ytx-bio__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+}
+
+.ytx-bio__toggle {
+  color: var(--neon-cyan);
+}
+
+.ytx-bio__toggle:hover {
+  color: var(--text-primary);
+}
+
+.ytx-bio__toggle svg {
+  transition: transform 0.2s ease;
+}
+
+.ytx-bio__toggle svg.is-flipped {
+  transform: rotate(180deg);
+}
+
+.ytx-bio__link {
+  color: var(--text-secondary);
+}
+
+.ytx-bio__link:hover {
+  color: var(--neon-cyan);
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 860px) {
+  .ytx-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 14px 16px;
+  }
+
+  .ytx-stat {
+    padding: 0 10px;
+  }
+
+  .ytx-stat__value {
+    font-size: 1.45rem;
+  }
+
+  .ytx-stats__status {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 11px;
+    padding: 10px 0 0;
+    border-top: 1px solid rgba(0, 245, 255, 0.12);
+  }
+
+  .ytx-bio__text {
+    -webkit-line-clamp: 5;
+  }
+}
+
+@media (max-width: 620px) {
+  .slash-core-stage__mark {
+    width: 78%;
+  }
+
+  .ytx-stats {
+    padding: 12px;
+  }
+
+  .ytx-stat {
+    padding: 0 7px;
+    gap: 4px;
+  }
+
+  .ytx-stat__label {
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .ytx-stat__value {
+    font-size: 1.24rem;
+  }
+
+  .ytx-bio {
+    padding: 16px;
+  }
+
+  .ytx-bio__head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ytx-bio__joined {
+    text-align: left;
+  }
+}
+
+@media (max-width: 430px) {
+  .ytx-stat__icon,
+  .ytx-stat__live {
+    display: none;
+  }
+
+  .ytx-stat__value {
+    font-size: 1.12rem;
+  }
+
+  .ytx-stats__updated {
+    font-size: 0.48rem;
+  }
+}
+
+/* ==========================================================================
+   LIGHT THEME
+   ========================================================================== */
+html[data-theme='light'] .ytx-stats {
+  background: rgba(8, 13, 27, 0.025);
+}
+
+html[data-theme='light'] .ytx-stat__value {
+  color: #111827;
+  text-shadow: none;
+}
+
+html[data-theme='light'] .ytx-stat__label,
+html[data-theme='light'] .ytx-stats__updated {
+  color: #64748b;
+}
+
+html[data-theme='light'] .ytx-bio {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+html[data-theme='light'] .ytx-bio__text {
+  color: #334155;
+}
+
+html[data-theme='light'] .ytx-bio__joined {
+  color: #64748b;
+}
