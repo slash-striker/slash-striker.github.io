@@ -2,15 +2,15 @@ import React, { useId } from 'react';
 
 interface LogoMarkProps {
   className?: string;
-  /** Adds the slow rotating arc + shine sweep behind the mark. */
+  /** Adds the blade glow, spark pulse and shine sweep. */
   animated?: boolean;
   title?: string;
 }
 
 /*
- * The SLASH CORE mark: an angular "S" cut by a diagonal slash inside a
- * faceted shield. One component so the navbar, hero, footer and favicon can
- * all share the same identity.
+ * The SLASH signature tag: a tilted cut-corner seal with an ivory S, a
+ * crimson blade slash, a cyan spark and a small SLASH signature line.
+ * One mark for the navbar, hero, footer and favicon.
  */
 export const LogoMark: React.FC<LogoMarkProps> = ({
   className = '',
@@ -18,12 +18,14 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
   title,
 }) => {
   const uid = useId().replace(/:/g, '');
-  const gradId = `slash-grad-${uid}`;
-  const slashId = `slash-stroke-${uid}`;
+  const bladeId = `slash-blade-${uid}`;
+  const sheenId = `slash-sheen-${uid}`;
+  const clipId = `slash-tag-clip-${uid}`;
+  const tagPath = 'M22 7 H98 L121 30 V94 L94 121 H30 L7 98 V30 Z';
 
   return (
     <svg
-      viewBox="0 0 120 120"
+      viewBox="0 0 128 128"
       fill="none"
       className={`slash-logo ${animated ? 'slash-logo--animated' : ''} ${className}`.trim()}
       role={title ? 'img' : undefined}
@@ -32,82 +34,96 @@ export const LogoMark: React.FC<LogoMarkProps> = ({
       focusable="false"
     >
       <defs>
-        <linearGradient id={gradId} x1="18" y1="16" x2="104" y2="108" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#F5F7FF" />
-          <stop offset="24%" stopColor="#00F5FF" />
-          <stop offset="56%" stopColor="#397BFF" />
-          <stop offset="82%" stopColor="#FF3CAC" />
-          <stop offset="100%" stopColor="#FF2740" />
+        <linearGradient
+          id={bladeId}
+          x1="92"
+          y1="106"
+          x2="118"
+          y2="26"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#C1122F" />
+          <stop offset="55%" stopColor="#FF2740" />
+          <stop offset="100%" stopColor="#FF5C8A" />
         </linearGradient>
-        <linearGradient id={slashId} x1="26" y1="98" x2="98" y2="20" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FF2740" />
-          <stop offset="52%" stopColor="#FF3CAC" />
-          <stop offset="100%" stopColor="#00F5FF" />
+        <linearGradient
+          id={sheenId}
+          x1="12"
+          y1="4"
+          x2="70"
+          y2="116"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop offset="0%" stopColor="#F6F2E7" stopOpacity="0.32" />
+          <stop offset="45%" stopColor="#F6F2E7" stopOpacity="0" />
         </linearGradient>
-        <linearGradient id={`${gradId}-shine`} x1="20" y1="0" x2="100" y2="120" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#F5F7FF" stopOpacity="0.55" />
-          <stop offset="40%" stopColor="#F5F7FF" stopOpacity="0" />
-        </linearGradient>
+        <clipPath id={clipId}>
+          <path d={tagPath} />
+        </clipPath>
       </defs>
 
-      {animated && (
-        <g className="slash-logo__orbit" opacity="0.55">
-          <circle cx="60" cy="60" r="55" stroke="#00F5FF" strokeOpacity="0.35" strokeWidth="1" strokeDasharray="2 9" />
-          <circle cx="60" cy="60" r="48" stroke="#FF3CAC" strokeOpacity="0.3" strokeWidth="1" strokeDasharray="18 70" strokeLinecap="round" />
-        </g>
-      )}
-
-      {/* Faceted shield */}
-      <path
-        d="M60 4 L106 29 V80 L60 116 L14 80 V29 Z"
-        fill="rgba(5, 9, 22, 0.82)"
-        stroke={`url(#${gradId})`}
-        strokeWidth="2.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M60 15 L96 35 V75 L60 103 L24 75 V35 Z"
-        stroke="#00F5FF"
-        strokeOpacity="0.28"
-        strokeWidth="1.2"
-        fill="none"
-      />
-      <path
-        d="M34 30 H46 M74 90 H86"
-        stroke="#FF3CAC"
-        strokeOpacity="0.65"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-
-      {/* Angular S */}
-      <path
-        d="M82 32 H44 L72 56 H38 L66 80 H30"
-        stroke={`url(#${gradId})`}
-        strokeWidth="11"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="slash-logo__s"
-      />
-
-      {/* Signature slash */}
-      <path
-        d="M23 97 L97 23"
-        stroke={`url(#${slashId})`}
-        strokeWidth="5"
-        strokeLinecap="round"
-        className="slash-logo__blade"
-      />
-      <path d="M29 93 L92 30" stroke="#F5F7FF" strokeOpacity="0.45" strokeWidth="1.2" strokeLinecap="round" />
-
-      {animated && (
+      <g transform="rotate(-4 64 64)">
+        {/* Cut-corner signature tag */}
         <path
-          className="slash-logo__shine"
-          d="M60 4 L106 29 V80 L60 116 Z"
-          fill={`url(#${gradId}-shine)`}
-          opacity="0"
+          d={tagPath}
+          fill="#08070D"
+          stroke="#F3EFE3"
+          strokeWidth="3.2"
+          strokeLinejoin="round"
         />
-      )}
+        <path
+          d="M32 17 H91 L111 37 V88 L84 111 H36 L17 90 V36 Z"
+          fill="none"
+          stroke="#FF2740"
+          strokeOpacity="0.4"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+        />
+
+        {/* Signature blade */}
+        <path
+          className="slash-logo__blade"
+          d="M88 108 L101 108 L116 31 L110 26 Z"
+          fill={`url(#${bladeId})`}
+        />
+        <path
+          d="M98 103 L113 34"
+          stroke="#F6F2E7"
+          strokeOpacity="0.28"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+
+        {/* Smooth S monogram */}
+        <path
+          className="slash-logo__s"
+          d="M82 35 C70 23 41 27 41 45 C41 61 79 55 81 74 C83 94 53 101 32 86"
+          stroke="#F6F2E7"
+          strokeWidth="14"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
+        {/* Cyan spark */}
+        <path
+          className="slash-logo__spark"
+          d="M25 13 L28 21 L36 24 L28 27 L25 35 L22 27 L14 24 L22 21 Z"
+          fill="#46E6FF"
+        />
+
+        {animated && (
+          <rect
+            className="slash-logo__sheen"
+            x="-32"
+            y="-20"
+            width="64"
+            height="168"
+            fill={`url(#${sheenId})`}
+            clipPath={`url(#${clipId})`}
+            opacity="0"
+          />
+        )}
+      </g>
     </svg>
   );
 };

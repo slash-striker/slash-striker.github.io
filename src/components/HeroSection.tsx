@@ -128,18 +128,17 @@ export const HeroSection: React.FC = () => {
         <div className="hero-visual-column">
           <div className="slash-core-stage" aria-hidden="true">
             <div className="slash-core-stage__halo" />
-            <div className="slash-core-stage__ring slash-core-stage__ring--outer" />
-            <div className="slash-core-stage__ring slash-core-stage__ring--middle" />
-            <div className="slash-core-stage__ring slash-core-stage__ring--inner" />
+            <div className="slash-core-stage__backslash" />
+            <div className="slash-core-stage__frame" />
             <div className="slash-core-stage__mark">
               <LogoMark animated />
             </div>
             <div className="slash-core-stage__tag slash-core-stage__tag--top">
               <Sparkles size={12} />
-              <span>SLASH CORE // S-01</span>
+              <span>S/ SIGNATURE // 01</span>
             </div>
             <div className="slash-core-stage__tag slash-core-stage__tag--bottom">
-              <span>IDENTITY MARK // LOCKED</span>
+              <span>ORIGINAL MARK // LOCKED</span>
             </div>
             <div className="slash-core-stage__readout">
               <span>X 09.41</span>
