@@ -704,10 +704,6 @@ Wanna join my youtube server? Click below for "My YT Discord Server" link!`,
               desc: 'Buy and scratch hidden holographic reward cards for prizes',
             },
             {
-              name: '/guess-number',
-              desc: 'Free-to-play number challenge — exact hit wins 500,000 coins',
-            },
-            {
               name: '/activities',
               desc: 'QOTD + multiplayer party games: bomb, math, mafia, and spy',
             },
@@ -1471,6 +1467,16 @@ Wanna join my youtube server? Click below for "My YT Discord Server" link!`,
         description:
           'A Minecraft-side utility bot for server status, player lookup, build showcases, modpack notes, and community build nights.',
         tags: ['TypeScript', 'Minecraft', 'Automation'],
+      },
+      {
+        id: 'slice-society',
+        title: 'Slice Society',
+        category: 'CSCI 3000 · Web Programming',
+        year: 'CLASS PROJECT',
+        role: 'Group member · Web development',
+        description:
+          'A pizza website built with a group for Web Programming (CSCI 3000) at the University of North Georgia. Our team chose the pizza theme, then designed and coded the site together.',
+        tags: ['Web Programming', 'Group Project', 'Web Design', 'UNG'],
       },
     ],
     skills: [
